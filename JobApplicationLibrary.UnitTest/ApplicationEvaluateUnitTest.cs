@@ -43,10 +43,9 @@ namespace JobApplicationLibrary.UnitTest
 
             //Arrange
             var moqValidator = new Mock<IIdentityValidator>();
-            moqValidator.Setup(i=>i.IsValid(It.IsAny<string>())).Returns(true);
+            moqValidator.Setup(i => i.IsValid(It.IsAny<string>())).Returns(true);
 
             var evaluator = new ApplicationEvaluator(moqValidator.Object);
-
             var form = new JobApplication()
             {
                 Applicant = new Applicant() { Age=19},
@@ -96,15 +95,19 @@ namespace JobApplicationLibrary.UnitTest
         {
             //Arrange
 
-            var moqValidator = new Mock<IIdentityValidator>();
-            moqValidator.Setup(i => i.IsValid(It.IsAny<string>())).Returns(false);
+            var moqValidator = new Mock<IIdentityValidator>(MockBehavior.Loose);
+             moqValidator.Setup(i => i.IsValid(It.IsAny<string>())).Returns(false);
+
+            //var moqValidato1r = new Mock<IIdentityValidator>(MockBehavior.Strict);
+            //moqValidato1r.Setup(i => i.IsValid(It.IsAny<string>())).Returns(false);
+            //moqValidato1r.Setup(i => i.CheckConnectionToRemoteServer()).Returns(false);
+
+
 
             var evaluator = new ApplicationEvaluator(moqValidator.Object);
             var form = new JobApplication()
             {
                 Applicant = new Applicant() { Age = 19 }
-
-
             };
             //Action
             var appResult = evaluator.Evaluate(form);

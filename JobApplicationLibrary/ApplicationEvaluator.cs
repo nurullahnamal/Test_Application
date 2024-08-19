@@ -25,11 +25,11 @@ namespace JobApplicationLibrary
         {
             if (form.Applicant.Age<minAge)
                 return ApplicationResult.AutoRejected;
+            var connectionSucced = identityValidator.CheckConnectionToRemoteServer();
+            var validIdentity = connectionSucced &&  identityValidator.IsValid(form.Applicant.IdentityNumber);
 
-            var ValidIdentity = identityValidator.IsValid(form.Applicant.IdentityNumber);
 
-
-            if (!ValidIdentity) 
+            if (!validIdentity) 
                 return ApplicationResult.TransferredToHR;
             
             var sr = GetTechStackSimilarityRate(form.TechStackList);
