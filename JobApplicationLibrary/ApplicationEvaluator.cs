@@ -12,13 +12,12 @@ namespace JobApplicationLibrary
     {
         private const int minAge = 18;
         private const int AutoAcceptedYearsOfExperience = 11;
-
+        private readonly IIdentityValidator identityValidator;
         private List<string> techStackList = new() { "C#", "Visual Studio", "Microservice", "Asp.net" };
-        private IdentityValidator IdentityValidator;
 
-        public ApplicationEvaluator()
+        public ApplicationEvaluator(IIdentityValidator identityValidator)
         {
-            IdentityValidator = new IdentityValidator();
+            this.identityValidator = identityValidator;
         }
 
 
@@ -27,7 +26,7 @@ namespace JobApplicationLibrary
             if (form.Applicant.Age<minAge)
                 return ApplicationResult.AutoRejected;
 
-            var ValidIdentity = IdentityValidator.IsValid(form.Applicant.IdentityNumber);
+            var ValidIdentity = identityValidator.IsValid(form.Applicant.IdentityNumber);
 
 
             if (!ValidIdentity) 
