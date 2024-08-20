@@ -162,5 +162,28 @@ namespace JobApplicationLibrary.UnitTest
             Assert.AreEqual(ApplicationResult.TransferredToCTO, appResult);
 
         }
+
+        [Test]
+        public void Application_WithOver50_ValidationToDetailed()
+        {
+            //Arrange
+
+            var mockValidator = new Mock<IIdentityValidator>();
+
+            //mockValidator.SetupProperty(i => i.ValidationMode);
+            mockValidator.SetupAllProperties();
+            mockValidator.Setup(i => i.CountryDataProvider.ContryData.Country).Returns("SPAIN");
+
+            var evaluator = new ApplicationEvaluator(mockValidator.Object);
+            var form = new JobApplication()
+            {
+                Applicant = new Applicant() { Age = 51 }
+            };
+            //Action
+            var appResult = evaluator.Evaluate(form);
+
+            //Assert
+            Assert.AreEqual(ValidationMode.Detailed, mockValidator.Object.ValidationMode);
+        }
     }
 }
