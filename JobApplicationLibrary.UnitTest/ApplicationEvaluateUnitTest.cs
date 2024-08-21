@@ -3,7 +3,8 @@ using NUnit.Framework;
 using Moq;
 using JobApplicationLibrary.Services;
 using System.Net.Http.Headers;
-
+using FluentAssertions;
+using System;
 namespace JobApplicationLibrary.UnitTest
 {
     public class ApplicationEvaluateUnitTest
@@ -30,10 +31,11 @@ namespace JobApplicationLibrary.UnitTest
 
 
             //Assert
-            Assert.AreEqual(ApplicationResult.AutoRejected, appResult);
+            //Assert.AreEqual(ApplicationResult.AutoRejected, appResult);
+            appResult.Should().Be(ApplicationResult.AutoRejected);
+
 
         }
-
 
 
         [Test]
@@ -50,6 +52,7 @@ namespace JobApplicationLibrary.UnitTest
 
             mockValidator.Setup(i => i.IsValid(It.IsAny<string>())).Returns(true);
 
+
             var evaluator = new ApplicationEvaluator(mockValidator.Object);
             var form = new JobApplication()
             {
@@ -62,13 +65,15 @@ namespace JobApplicationLibrary.UnitTest
 
 
             //Assert
-            Assert.AreEqual( ApplicationResult.AutoRejected,appResult);
+            //Assert.AreEqual( ApplicationResult.AutoRejected,appResult);
+            appResult.Should().Be(ApplicationResult.AutoRejected);
+
 
         }
 
-      
 
-         [Test]
+
+        [Test]
         public void Application_WithTechStackOver75_TransferredToAutoAccepted()
         {
             //Arrange
@@ -92,7 +97,9 @@ namespace JobApplicationLibrary.UnitTest
 
 
             //Assert
-            Assert.AreEqual(ApplicationResult.AutoRejected, appResult);
+            //Assert.AreEqual(ApplicationResult.AutoAccepted, appResult);
+            appResult.Should().Be(ApplicationResult.AutoAccepted);
+
 
         }
 
@@ -125,13 +132,17 @@ namespace JobApplicationLibrary.UnitTest
 
 
             //Assert
-            Assert.AreEqual( ApplicationResult.TransferredToHR,appResult);
+            //Assert.AreEqual( ApplicationResult.TransferredToHR,appResult);
+            appResult.Should().Be(ApplicationResult.TransferredToHR);
+
+
+
 
         }
 
 
 
-        
+
         [Test]
         public void Application_WithOfficeLocation_TransferredToCTO()
         {
@@ -159,7 +170,8 @@ namespace JobApplicationLibrary.UnitTest
 
 
             //Assert
-            Assert.AreEqual(ApplicationResult.TransferredToCTO, appResult);
+            //Assert.AreEqual(ApplicationResult.TransferredToCTO, appResult);
+            appResult.Should().Be(ApplicationResult.TransferredToCTO);
 
         }
 
@@ -183,7 +195,83 @@ namespace JobApplicationLibrary.UnitTest
             var appResult = evaluator.Evaluate(form);
 
             //Assert
-            Assert.AreEqual(ValidationMode.Detailed, mockValidator.Object.ValidationMode);
+            //Assert.AreEqual(ValidationMode.Detailed, mockValidator.Object.ValidationMode);
+            mockValidator.Object.ValidationMode.Should().Be(ValidationMode.Detailed);
+
+        }
+        [Test]
+
+        public void Application_WithNullApplication_ThrowsArgumentNullException()
+        {
+            //Arrange
+
+            var mockValidator = new Mock<IIdentityValidator>();
+
+
+            var evaluator = new ApplicationEvaluator(mockValidator.Object);
+            var form = new JobApplication();
+
+            //Action
+            Action appResult = () => evaluator.Evaluate(form).Should() ;
+
+            //Assert
+
+            appResult.Should().Throw<ArgumentNullException>();
+            //mockValidator.Object.ValidationMode.Should().Be(ValidationMode.Detailed);
+        }
+
+        [Test]
+
+        public void Application_WithDefaultValue_IsValidCalled()
+        {
+
+            //Arrange
+            var mockValidator = new Mock<IIdentityValidator>();
+            mockValidator.DefaultValue = DefaultValue.Mock;
+
+            mockValidator.Setup(i => i.CountryDataProvider.ContryData.Country).Returns("TURKEY");
+
+
+
+            var evaluator = new ApplicationEvaluator(mockValidator.Object);
+            var form = new JobApplication()
+            {
+                Applicant = new Applicant() { Age = 19 ,IdentityNumber="1234"}, 
+
+            };
+            //Action
+            var appResult = evaluator.Evaluate(form);
+
+
+            //Assert
+            mockValidator.Verify(i=>i.IsValid(It.IsAny<string>()), Times.Exactly(1));
+        }
+
+        [Test]
+
+        public void Application_WithYoungAge_IsValidNeverCalled()
+        {
+
+            //Arrange
+            var mockValidator = new Mock<IIdentityValidator>();
+            mockValidator.DefaultValue = DefaultValue.Mock;
+
+            mockValidator.Setup(i => i.CountryDataProvider.ContryData.Country).Returns("TURKEY");
+
+
+
+            var evaluator = new ApplicationEvaluator(mockValidator.Object);
+            var form = new JobApplication()
+            {
+                Applicant = new Applicant() { Age = 15},
+
+            };
+            //Action
+            var appResult = evaluator.Evaluate(form);
+
+
+            //Assert
+            mockValidator.Verify(i => i.IsValid("123"), Times.Never);
         }
     }
 }
