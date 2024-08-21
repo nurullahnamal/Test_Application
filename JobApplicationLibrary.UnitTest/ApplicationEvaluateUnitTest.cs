@@ -177,7 +177,7 @@ namespace JobApplicationLibrary.UnitTest
             var evaluator = new ApplicationEvaluator(mockValidator.Object);
             var form = new JobApplication()
             {
-                Applicant = new Applicant() { Age = 51 }
+                Applicant = new Applicant() { Age = 51 } 
             };
             //Action
             var appResult = evaluator.Evaluate(form);
